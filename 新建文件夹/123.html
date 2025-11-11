@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>双十一转盘活动</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #ff6b6b, #ff8e53);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            color: #333;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+        }
+        
+        h1 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chances {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .wheel-container {
+            position: relative;
+            width: 300px;
+            height: 300px;
+            margin: 0 auto 30px;
+        }
+        
+        .wheel {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            position: relative;
+            overflow: hidden;
+            transition: transform 3s cubic-bezier(0.2, 0.8, 0.3, 1);
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.2);
+            border: 8px solid #f1c40f;
+        }
+        
+        .section {
+            position: absolute;
+            width: 50%;
+            height: 50%;
+            transform-origin: bottom right;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+        }
+        
+        .section-1 {
+            background-color: #e74c3c;
+            transform: rotate(0deg) skewY(-30deg);
+        }
+        
+        .section-2 {
+            background-color: #3498db;
+            transform: rotate(120deg) skewY(-30deg);
+        }
+        
+        .section-3 {
+            background-color: #2ecc71;
+            transform: rotate(240deg) skewY(-30deg);
+        }
+        
+        .section-text {
+            transform: skewY(30deg) rotate(60deg);
+            text-align: center;
+            font-size: 16px;
+            width: 80px;
+        }
+        
+        .center-circle {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background-color: #f1c40f;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e74c3c;
+            font-weight: bold;
+            font-size: 14px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            cursor: pointer;
+            border: 4px solid #e74c3c;
+        }
+        
+        .pointer {
+            position: absolute;
+            top: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 30px;
+            height: 40px;
+            background-color: #e74c3c;
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+            z-index: 5;
+        }
+        
+        .spin-btn {
+            background: linear-gradient(to bottom, #e74c3c, #c0392b);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.2rem;
+            border-radius: 50px;
+            cursor: pointer;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s;
+        }
+        
+        .spin-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .spin-btn:disabled {
+            background: #bdc3c7;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .result-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-content h2 {
+            color: #e74c3c;
+            margin-bottom: 20px;
+        }
+        
+        .prize-image {
+            max-width: 100%;
+            max-height: 200px;
+            margin: 15px 0;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .countdown {
+            font-size: 1.2rem;
+            margin-top: 20px;
+            color: #e74c3c;
+            font-weight: bold;
+        }
+        
+        .end-message {
+            font-size: 1.5rem;
+            color: #e74c3c;
+            margin: 20px 0;
+            padding: 20px;
+            background-color: #ffeaa7;
+            border-radius: 10px;
+        }
+        
+        .instructions {
+            background-color: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+            text-align: left;
+        }
+        
+        .instructions h3 {
+            color: #e74c3c;
+            margin-bottom: 10px;
+        }
+        
+        .instructions ul {
+            padding-left: 20px;
+        }
+        
+        .instructions li {
+            margin-bottom: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>双十一转盘抽奖活动</h1>
+        
+        <div class="chances">剩余抽奖次数: <span id="chance-count">3</span></div>
+        
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <div class="wheel" id="wheel">
+                <div class="section section-1">
+                    <div class="section-text">一等奖</div>
+                </div>
+                <div class="section section-2">
+                    <div class="section-text">二等奖</div>
+                </div>
+                <div class="section section-3">
+                    <div class="section-text">谢谢惠顾</div>
+                </div>
+                <div class="center-circle" id="spin-btn">点击抽奖</div>
+            </div>
+        </div>
+        
+        <button class="spin-btn" id="spin-button">开始抽奖</button>
+        
+        <div class="instructions">
+            <h3>活动说明：</h3>
+            <ul>
+                <li>您有 <strong>3次</strong> 抽奖机会</li>
+                <li>一等奖：祝福语 + 精美图片</li>
+                <li>二等奖：精美图片</li>
+                <li>谢谢惠顾：鼓励语，不跳转页面</li>
+                <li>中奖后会自动跳转到对应页面，15秒后返回</li>
+            </ul>
+        </div>
+    </div>
+    
+    <!-- 一等奖结果弹窗 -->
+    <div class="result-modal" id="first-prize-modal">
+        <div class="modal-content">
+            <h2>恭喜您获得一等奖！</h2>
+            <p>双十一快乐！愿您的购物车永远不超预算！</p >
+            <!-- 替换下面的src为您的一等奖图片路径 -->
+           <img src="eb473eec96168993bbe7482a98175908.jpg" class="prize-image">
+            <div class="countdown"><span id="first-countdown">15</span>秒后返回抽奖页面</div>
+        </div>
+    </div>
+    <!-- 二等奖结果弹窗 -->
+    <div class="result-modal" id="second-prize-modal">
+        <div class="modal-content">
+            <h2>恭喜您获得二等奖！</h2>
+            <p>感谢您的参与！</p >
+            <!-- 替换下面的src为您的二等奖图片路径 -->
+            <video width=100% controls>
+            <source src="微信视频2025-11-11_171020_832.mp4" type="video/mp4">
+            </video>
+            <div class="countdown"><span id="second-countdown">15</span>秒后返回抽奖页面</div>
+        </div>
+    </div>
+    <!-- 谢谢惠顾弹窗 -->
+    <div class="result-modal" id="no-prize-modal">
+        <div class="modal-content">
+            <h2>谢谢惠顾</h2>
+            <p>再接再厉，下次一定中奖！</p >
+            <button class="spin-btn" id="continue-btn">继续抽奖</button>
+        </div>
+    </div>
+    
+    <!-- 活动结束提示 -->
+    <div class="result-modal" id="end-modal">
+        <div class="modal-content">
+            <h2>活动结束</h2>
+            <p>您的抽奖机会已用完，感谢参与！</p >
+            <button class="spin-btn" onclick="location.reload()">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        // 初始化变量
+        let chances = 3;
+        let isSpinning = false;
+        
+        // 获取DOM元素
+        const wheel = document.getElementById('wheel');
+        const spinButton = document.getElementById('spin-button');
+        const centerSpinBtn = document.getElementById('spin-btn');
+        const chanceCount = document.getElementById('chance-count');
+        
+        // 结果弹窗
+        const firstPrizeModal = document.getElementById('first-prize-modal');
+        const secondPrizeModal = document.getElementById('second-prize-modal');
+        const noPrizeModal = document.getElementById('no-prize-modal');
+        const endModal = document.getElementById('end-modal');
+        
+        // 倒计时显示
+        const firstCountdown = document.getElementById('first-countdown');
+        const secondCountdown = document.getElementById('second-countdown');
+        
+        // 继续抽奖按钮
+        const continueBtn = document.getElementById('continue-btn');
+        
+        // 抽奖函数
+        function spinWheel() {
+            if (isSpinning || chances <= 0) return;
+            
+            isSpinning = true;
+            chances--;
+            chanceCount.textContent = chances;
+            
+            // 生成随机旋转角度（确保停在某个奖项区域）
+            const extraSpins = 5; // 额外旋转圈数
+            const prizeSections = 3; // 奖项数量
+            const sectionAngle = 360 / prizeSections;
+            
+            // 随机选择一个奖项（0: 一等奖, 1: 二等奖, 2: 谢谢惠顾）
+            const prizeIndex = Math.floor(Math.random() * prizeSections);
+            
+            // 计算最终旋转角度
+            const finalAngle = 360 * extraSpins + (prizeIndex * sectionAngle) + (sectionAngle / 2);
+            
+            // 应用旋转动画
+            wheel.style.transform = `rotate(${finalAngle}deg)`;
+            
+            // 旋转结束后显示结果
+            setTimeout(() => {
+                isSpinning = false;
+                showPrizeResult(prizeIndex);
+            }, 3000);
+        }
+        
+        // 显示抽奖结果
+        function showPrizeResult(prizeIndex) {
+            // 根据抽奖结果显示不同的弹窗
+            if (prizeIndex === 0) {
+                // 一等奖
+                firstPrizeModal.style.display = 'flex';
+                startCountdown(firstCountdown, firstPrizeModal);
+            } else if (prizeIndex === 1) {
+                // 二等奖
+                secondPrizeModal.style.display = 'flex';
+                startCountdown(secondCountdown, secondPrizeModal);
+            } else {
+                // 谢谢惠顾
+                noPrizeModal.style.display = 'flex';
+            }
+            
+            // 检查是否还有抽奖机会
+            if (chances <= 0) {
+                setTimeout(() => {
+                    endModal.style.display = 'flex';
+                }, 2000);
+            }
+        }
+        
+        // 倒计时函数
+        function startCountdown(countdownElement, modal) {
+            let seconds = 10;
+            countdownElement.textContent = seconds;
+            
+            const countdownInterval = setInterval(() => {
+                seconds--;
+                countdownElement.textContent = seconds;
+                
+                if (seconds <= 0) {
+                    clearInterval(countdownInterval);
+                    modal.style.display = 'none';
+                }
+            }, 1000);
+        }
+        
+        // 事件监听
+        spinButton.addEventListener('click', spinWheel);
+        centerSpinBtn.addEventListener('click', spinWheel);
+        
+        continueBtn.addEventListener('click', () => {
+            noPrizeModal.style.display = 'none';
+        });
+    </script>
+</body>
+</html>
